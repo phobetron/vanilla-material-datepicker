@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Datepicker</title>
+    <link rel="stylesheet" href="datepicker.css">
+    <script src="moment.js"></script>
+    <script src="datepicker.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function(event) {
+        var input = document.querySelector('[name=date_field]'),
+            display = document.querySelector('.display');
+
+        window.datepicker = new Datepicker({
+          input: input,
+          display: display
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <form action="#">
+      <p>
+        <span class="display">Date</span>
+        <input name="date_field" type="hidden">
+      </p>
+    </form>
+  </body>
+</html>
