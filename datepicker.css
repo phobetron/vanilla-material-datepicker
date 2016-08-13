@@ -1,0 +1,95 @@
+.datepicker {
+  background: #fff;
+  box-shadow: 0 1px 3px 0 rgba(0,0,0,.2), 0 1px 1px 0 rgba(0,0,0,.14), 0 2px 1px -1px rgba(0,0,0,.12);
+  box-sizing: content-box;
+  color: #333;
+  font-family: Verdana, Arial, sans-serif;
+  font-size: .8125rem;
+  padding: 1px;
+  width: 24em;
+}
+
+.datepicker table {
+  border: 0;
+  border-collapse: collapse;
+  position: relative;
+  width: 100%;
+}
+
+.datepicker caption {
+  font-size: 1.1em;
+  font-weight: bold;
+  padding: .75em 1.25em 1em;
+  text-align: left;
+}
+
+.datepicker tbody {
+  z-index: 2;
+}
+
+.datepicker th, .datepicker td {
+  height: 3.2em;
+  padding: 0;
+  text-align: center;
+  width: 3.2em;
+}
+
+.datepicker th:first-child, .datepicker td:first-child {
+  padding-left: 1em;
+}
+
+.datepicker th:last-child, .datepicker td:last-child {
+  padding-right: 1em;
+}
+
+.datepicker-header {
+  background: #e0e0e0;
+}
+
+table.datepicker-month {
+  border-bottom: 1px solid #efefef;
+  margin-bottom: 1em;
+  padding-bottom: 1em;
+}
+
+.datepicker-month a, .datepicker-month a:visited {
+  background: transparent;
+  border-radius: 50%;
+  color: inherit;
+  display: inline-block;
+  line-height: 3em;
+  text-decoration: none;
+  width: 3em;
+}
+
+.datepicker-month a:hover {
+  background-color: #eee;
+}
+
+.datepicker-month a:active, .datepicker-month a:focus {
+  background-color: #ccc;
+}
+
+.datepicker-month a.selected {
+  background-color: #16c;
+  color: #fff;
+}
+
+.datepicker-month a.today {
+  border: 1px solid #16c;
+}
+
+.datepicker-month span {
+  color: #ccc;
+}
+
+.datepicker-month span.selected {
+  color: #99d;
+}
+
+.datepicker-month .inset {
+  left: 0;
+  padding: 0 2.25em;
+  position: absolute;
+  top: .7em;
+}
