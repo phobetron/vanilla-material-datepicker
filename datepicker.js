@@ -5,7 +5,9 @@ var Datepicker = (function() {
   var datepickers = [];
 
   function Datepicker(options) {
-    var validOptions = [
+    var _this = this,
+        valid = true,
+        validOptions = [
           'date',
           'input',
           'display',
@@ -14,16 +16,15 @@ var Datepicker = (function() {
           'max',
           'filter'
         ],
-        valid = true,
         defaultDescriptor = {
           writeable: false,
           enumerable: false,
           configurable: false
         },
-        _date, _min, _max, _open,
-        _this = this,
+        calendarContainer = document.createElement('aside'),
         displayedMonths = [],
-        calendarContainer = document.createElement('aside');
+        open = false,
+        date, min, max;
 
     Object.keys(options).forEach(function(option) {
       if (validOptions.indexOf(option) < 0) {
@@ -32,9 +33,9 @@ var Datepicker = (function() {
       }
     });
 
-    _date = options.date ? moment(options.date) : moment();
-    _min = options.min ? moment(options.min) : null;
-    _max = options.max ? moment(options.max) : null;
+    date = options.date ? moment(options.date) : moment();
+    min = options.min ? moment(options.min) : null;
+    max = options.max ? moment(options.max) : null;
 
     if (!options.input) {
       console.warn('Option \'input\' is required');
@@ -44,12 +45,12 @@ var Datepicker = (function() {
       valid = false;
     }
 
-    if (_min && _min.toString() === 'Invalid date') {
+    if (min && min.toString() === 'Invalid date') {
       console.warn('Option \'min\' must be a valid date string or object');
       valid = false
     }
 
-    if (_max && _max.toString() === 'Invalid date') {
+    if (max && max.toString() === 'Invalid date') {
       console.warn('Option \'max\' must be a valid date string or object');
       valid = false
     }
@@ -65,26 +66,28 @@ var Datepicker = (function() {
     }
 
     Object.defineProperties(this, {
-      close: merge({
-        value: function() {
-          _open = false;
-          calendarContainer.style.display = 'none';
-        }
-      }, defaultDescriptor),
-
       open: merge({
         value: function() {
           datepickers.forEach(function(dp) {
             dp.close();
           });
 
-          _open = true;
           calendarContainer.style.display = 'block';
+          renderMonths();
+          open = true;
+        }
+      }, defaultDescriptor),
+
+      close: merge({
+        value: function() {
+          calendarContainer.style.display = 'none';
+          destroyMonths();
+          open = false;
         }
       }, defaultDescriptor),
 
       isOpen: merge({
-        value: function() { return _open; }
+        value: function() { return open; }
       }, defaultDescriptor),
 
       input: merge({
@@ -104,14 +107,26 @@ var Datepicker = (function() {
       }, defaultDescriptor),
 
       date: {
-        get: function() { return _date; },
+        get: function() { return date; },
         set: function(value) {
-          _date = value ? moment(value) : moment();
+          date = value ? moment(value) : moment();
 
           updateDate();
         }
       }
     });
+
+    if (min) {
+      Object.defineProperty(this, 'min', merge({
+        value: min
+      }, defaultDescriptor));
+    }
+
+    if (max) {
+      Object.defineProperty(this, 'max', merge({
+        value: max
+      }, defaultDescriptor));
+    }
 
     if (options.display) {
       Object.defineProperty(this, 'display', merge({
@@ -129,18 +144,6 @@ var Datepicker = (function() {
       options.display.addEventListener('click', togglePickerHandler);
     } else {
       options.input.addEventListener('focus', this.open);
-    }
-
-    if (_min) {
-      Object.defineProperty(this, 'min', merge({
-        value: _min
-      }, defaultDescriptor));
-    }
-
-    if (_max) {
-      Object.defineProperty(this, 'max', merge({
-        value: _max
-      }, defaultDescriptor));
     }
 
     datepickers.push(this);
@@ -164,21 +167,13 @@ var Datepicker = (function() {
     }
 
     function renderCalendar() {
-      var monthContainer, monthTables, top, left;
-
-      calendarContainer.className = 'datepicker';
-      calendarContainer.appendChild(renderCalendarHeader());
-      monthContainer = calendarContainer.appendChild(renderMonths());
+      var top, left;
 
       document.body.appendChild(calendarContainer);
 
-      monthTables = monthContainer.querySelectorAll('table');
+      calendarContainer.className = 'datepicker';
 
-      monthContainer.style.height = (monthContainer.querySelector('td').offsetHeight * 7.5) + 'px';
-      monthContainer.style.paddingRight = (monthContainer.offsetWidth - monthContainer.clientWidth) + 'px';
-      monthContainer.scrollTop = monthTables[parseInt(monthTables.length / 2)].offsetTop;
-      monthContainer.addEventListener('scroll', monthScrollHandler(monthContainer));
-      monthContainer.style.visibility = 'visible';
+      renderCalendarHeader();
 
       calendarContainer.setAttribute('style', 'display:none;overflow:hidden;position:absolute;');
 
@@ -200,6 +195,8 @@ var Datepicker = (function() {
           head = document.createElement('thead'),
           week = document.createElement('tr');
 
+      calendarContainer.appendChild(table);
+
       table.className = 'datepicker-header';
 
       weekdays.forEach(function(day) {
@@ -210,16 +207,17 @@ var Datepicker = (function() {
 
       head.appendChild(week);
       table.appendChild(head);
-
-      return table;
     }
 
     function renderMonths() {
       var monthContainer = document.createElement('div'),
-          prevMonth = _date.clone().subtract(1, 'month').endOf('month'),
-          currMonth = _date.clone(),
-          nextMonth = _date.clone().add(1, 'month').startOf('month'),
-          months = [];
+          prevMonth = _this.date.clone().subtract(1, 'month').endOf('month'),
+          currMonth = _this.date.clone(),
+          nextMonth = _this.date.clone().add(1, 'month').startOf('month'),
+          months = [],
+          monthElm, currMonthElm;
+
+      calendarContainer.appendChild(monthContainer);
 
       monthContainer.className = 'datepicker-months';
       monthContainer.setAttribute('style', 'overflow-y:auto;position:relative;visibility:hidden;width:100%;');
@@ -233,10 +231,27 @@ var Datepicker = (function() {
       months.forEach(function(month) {
         displayedMonths.push(month);
 
-        monthContainer.appendChild(renderMonth(month));
+        monthElm = renderMonth(month);
+        monthContainer.appendChild(monthElm);
+
+        if (month === currMonth) { currMonthElm = monthElm; }
       });
 
-      return monthContainer;
+      monthContainer.style.height = (monthContainer.querySelector('td').offsetHeight * 7.5) + 'px';
+      monthContainer.style.paddingRight = (monthContainer.offsetWidth - monthContainer.clientWidth) + 'px';
+      monthContainer.scrollTop = currMonthElm.offsetTop;
+      monthContainer.addEventListener('scroll', monthScrollHandler(monthContainer));
+      monthContainer.style.visibility = 'visible';
+    }
+
+    function destroyMonths() {
+      var monthContainer = calendarContainer.querySelector('.datepicker-months');
+
+      if (monthContainer) {
+        monthContainer.parentNode.removeChild(monthContainer);
+
+        displayedMonths = [];
+      }
     }
 
     function renderMonth(monthDate) {

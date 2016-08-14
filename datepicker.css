@@ -52,7 +52,7 @@ table.datepicker-month {
   padding-bottom: 1em;
 }
 
-.datepicker-month a, .datepicker-month a:visited {
+.datepicker-month a, .datepicker-month a:visited, .datepicker-month span {
   background: transparent;
   border-radius: 50%;
   color: inherit;
@@ -75,7 +75,7 @@ table.datepicker-month {
   color: #fff;
 }
 
-.datepicker-month a.today {
+.datepicker-month .today {
   border: 1px solid #16c;
 }
 
@@ -84,7 +84,11 @@ table.datepicker-month {
 }
 
 .datepicker-month span.selected {
-  color: #99d;
+  color: #16c;
+}
+
+.datepicker-month span.today {
+  border-style: dashed;
 }
 
 .datepicker-month .inset {
