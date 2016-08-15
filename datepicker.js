@@ -6,64 +6,23 @@ var Datepicker = (function() {
 
   function Datepicker(options) {
     var _this = this,
-        valid = true,
-        validOptions = [
-          'date',
-          'input',
-          'display',
-          'button',
-          'min',
-          'max',
-          'filter'
-        ],
         defaultDescriptor = {
           writeable: false,
           enumerable: false,
           configurable: false
         },
-        calendarContainer = document.createElement('aside'),
-        displayedMonths = [],
+        container = document.createElement('aside'),
+        months = [],
         open = false,
-        date, min, max;
+        date = options.date ? moment(options.date) : moment(),
+        min = options.min ? moment(options.min) : null,
+        max = options.max ? moment(options.max) : null,
+        filter = options.filter || function(d) { return false; },
+        formatInput = options.formatInput || 'YYYY-MM-DD',
+        formatDisplay = options.formatDisplay || 'MMMM Do, YYYY';
 
-    Object.keys(options).forEach(function(option) {
-      if (validOptions.indexOf(option) < 0) {
-        console.warn('Option \''+option+'\' is not supported by the date picker');
-        valid = false;
-      }
-    });
+    if (!validOptions(options)) { return false; }
 
-    date = options.date ? moment(options.date) : moment();
-    min = options.min ? moment(options.min) : null;
-    max = options.max ? moment(options.max) : null;
-
-    if (!options.input) {
-      console.warn('Option \'input\' is required');
-      valid = false;
-    } else if (options.input.type === 'hidden' && !options.display) {
-      console.warn('Option \'input\' may only be of type \'hidden\' if a \'display\' element is configured');
-      valid = false;
-    }
-
-    if (min && min.toString() === 'Invalid date') {
-      console.warn('Option \'min\' must be a valid date string or object');
-      valid = false
-    }
-
-    if (max && max.toString() === 'Invalid date') {
-      console.warn('Option \'max\' must be a valid date string or object');
-      valid = false
-    }
-
-    if (options.filter && typeof options.filter !== 'function') {
-      console.warn('Option \'filter\' must be a function that returns a boolean for a given date');
-      valid = false;
-    }
-
-    if (!valid) {
-      console.error('Date picker could not be initialized due to warnings');
-      return false;
-    }
 
     Object.defineProperties(this, {
       open: merge({
@@ -72,7 +31,7 @@ var Datepicker = (function() {
             dp.close();
           });
 
-          calendarContainer.style.display = 'block';
+          _this.container.style.display = 'block';
           renderMonths();
           open = true;
         }
@@ -80,7 +39,7 @@ var Datepicker = (function() {
 
       close: merge({
         value: function() {
-          calendarContainer.style.display = 'none';
+          _this.container.style.display = 'none';
           destroyMonths();
           open = false;
         }
@@ -90,20 +49,28 @@ var Datepicker = (function() {
         value: function() { return open; }
       }, defaultDescriptor),
 
+      months: merge({
+        value: months
+      }, defaultDescriptor),
+
+      container: merge({
+        value: container
+      }, defaultDescriptor),
+
       input: merge({
         value: options.input
       }, defaultDescriptor),
 
       formatInput: merge({
-        value: options.formatInput || 'YYYY-MM-DD'
+        value: formatInput
       }, defaultDescriptor),
 
       formatDisplay: merge({
-        value: options.formatDisplay || 'MMMM Do, YYYY'
+        value: formatDisplay
       }, defaultDescriptor),
 
       filter: merge({
-        value: options.filter || function(d) { return false; }
+        value: filter
       }, defaultDescriptor),
 
       date: {
@@ -143,13 +110,65 @@ var Datepicker = (function() {
     } else if (options.display) {
       options.display.addEventListener('click', togglePickerHandler);
     } else {
-      options.input.addEventListener('focus', this.open);
+      options.input.addEventListener('focus', openPickerHandler);
     }
+
+    document.body.addEventListener('keyup', closePickerHandler);
 
     datepickers.push(this);
 
     updateDate();
     renderCalendar();
+
+    function validOptions(options) {
+      var valid = true,
+          validOptions = [
+            'date',
+            'input',
+            'display',
+            'button',
+            'min',
+            'max',
+            'filter'
+          ];
+
+      Object.keys(options).forEach(function(option) {
+        if (validOptions.indexOf(option) < 0) {
+          console.warn('Option \''+option+'\' is not supported by the date picker');
+          valid = false;
+        }
+      });
+
+      if (!options.input) {
+        console.warn('Option \'input\' is required');
+        valid = false;
+      } else if (options.input.type === 'hidden' && !options.display) {
+        console.warn('Option \'input\' may only be of type \'hidden\' if a \'display\' element is configured');
+        valid = false;
+      }
+
+      if (min && min.toString() === 'Invalid date') {
+        console.warn('Option \'min\' must be a valid date string or object');
+        valid = false;
+      }
+
+      if (max && max.toString() === 'Invalid date') {
+        console.warn('Option \'max\' must be a valid date string or object');
+        valid = false;
+      }
+
+      if (options.filter && typeof options.filter !== 'function') {
+        console.warn('Option \'filter\' must be a function that returns a boolean for a given date');
+        valid = false;
+      }
+
+      if (!valid) {
+        console.error('Date picker could not be initialized due to warnings');
+        return false;
+      } else {
+        return true;
+      }
+    }
 
     function updateDate() {
       updateDateInput();
@@ -169,13 +188,13 @@ var Datepicker = (function() {
     function renderCalendar() {
       var top, left;
 
-      document.body.appendChild(calendarContainer);
+      document.body.appendChild(_this.container);
 
-      calendarContainer.className = 'datepicker';
+      _this.container.className = 'datepicker';
 
       renderCalendarHeader();
 
-      calendarContainer.setAttribute('style', 'display:none;overflow:hidden;position:absolute;');
+      _this.container.setAttribute('style', 'display:none;overflow:hidden;position:absolute;');
 
       if (_this.display) {
         top = _this.display.offsetTop + _this.display.offsetHeight;
@@ -185,8 +204,8 @@ var Datepicker = (function() {
         left = _this.input.offsetLeft;
       }
 
-      calendarContainer.style.top = top + 'px';
-      calendarContainer.style.left = left + 'px';
+      _this.container.style.top = top + 'px';
+      _this.container.style.left = left + 'px';
     }
 
     function renderCalendarHeader() {
@@ -195,7 +214,7 @@ var Datepicker = (function() {
           head = document.createElement('thead'),
           week = document.createElement('tr');
 
-      calendarContainer.appendChild(table);
+      _this.container.appendChild(table);
 
       table.className = 'datepicker-header';
 
@@ -214,23 +233,20 @@ var Datepicker = (function() {
           prevMonth = _this.date.clone().subtract(1, 'month').endOf('month'),
           currMonth = _this.date.clone(),
           nextMonth = _this.date.clone().add(1, 'month').startOf('month'),
-          months = [],
           monthElm, currMonthElm;
 
-      calendarContainer.appendChild(monthContainer);
+      _this.container.appendChild(monthContainer);
 
       monthContainer.className = 'datepicker-months';
       monthContainer.setAttribute('style', 'overflow-y:auto;position:relative;visibility:hidden;width:100%;');
 
-      if (!_this.min || prevMonth.isAfter(_this.min)) { months.push(prevMonth); }
+      if (!_this.min || prevMonth.isAfter(_this.min)) { _this.months.push(prevMonth); }
 
-      months.push(currMonth);
+      _this.months.push(currMonth);
 
-      if (!_this.min || nextMonth.isBefore(_this.max)) { months.push(nextMonth); }
+      if (!_this.min || nextMonth.isBefore(_this.max)) { _this.months.push(nextMonth); }
 
-      months.forEach(function(month) {
-        displayedMonths.push(month);
-
+      _this.months.forEach(function(month) {
         monthElm = renderMonth(month);
         monthContainer.appendChild(monthElm);
 
@@ -240,17 +256,17 @@ var Datepicker = (function() {
       monthContainer.style.height = (monthContainer.querySelector('td').offsetHeight * 7.5) + 'px';
       monthContainer.style.paddingRight = (monthContainer.offsetWidth - monthContainer.clientWidth) + 'px';
       monthContainer.scrollTop = currMonthElm.offsetTop;
-      monthContainer.addEventListener('scroll', monthScrollHandler(monthContainer));
+      monthContainer.addEventListener('scroll', monthScrollHandler);
       monthContainer.style.visibility = 'visible';
     }
 
     function destroyMonths() {
-      var monthContainer = calendarContainer.querySelector('.datepicker-months');
+      var monthContainer = _this.container.querySelector('.datepicker-months');
 
       if (monthContainer) {
         monthContainer.parentNode.removeChild(monthContainer);
 
-        displayedMonths = [];
+        _this.months.splice(0);
       }
     }
 
@@ -322,34 +338,41 @@ var Datepicker = (function() {
       }
     }
 
+    function openPickerHandler(e) {
+      _this.open();
+    }
+
+    function closePickerHandler(e) {
+      if (e.key === 'Escape' || e.keyCode === '27') { _this.close(); }
+    }
+
     function togglePickerHandler(e) {
       e.preventDefault();
 
       _this.isOpen() ? _this.close() : _this.open();
     }
 
-    function monthScrollHandler(monthContainer) {
-      return function() {
-        var loadArea = monthContainer.querySelector('td').offsetHeight * 2,
-            newMonth;
+    function monthScrollHandler() {
+      var monthContainer = _this.container.querySelector('.datepicker-months'),
+          loadArea = monthContainer.querySelector('td').offsetHeight * 2,
+          newMonth;
 
-        if (monthContainer.scrollTop < loadArea) {
-          newMonth = displayedMonths[0].clone().subtract(1, 'month').endOf('month');
+      if (monthContainer.scrollTop < loadArea) {
+        newMonth = _this.months[0].clone().subtract(1, 'month').endOf('month');
 
-          if (!_this.min || newMonth.isAfter(_this.min)) {
-            displayedMonths.unshift(newMonth);
+        if (!_this.min || newMonth.isAfter(_this.min)) {
+          _this.months.unshift(newMonth);
 
-            monthContainer.insertBefore(renderMonth(displayedMonths[0]), monthContainer.querySelector('table'));
-            monthContainer.scrollTop = monthContainer.querySelectorAll('table')[1].offsetTop + loadArea;
-          }
-        } else if (monthContainer.scrollHeight - monthContainer.scrollTop < monthContainer.offsetHeight + loadArea) {
-          newMonth = displayedMonths[displayedMonths.length-1].clone().add(1, 'month').startOf('month');
+          monthContainer.insertBefore(renderMonth(_this.months[0]), monthContainer.querySelector('table'));
+          monthContainer.scrollTop = monthContainer.querySelectorAll('table')[1].offsetTop + loadArea;
+        }
+      } else if (monthContainer.scrollHeight - monthContainer.scrollTop < monthContainer.offsetHeight + loadArea) {
+        newMonth = _this.months[_this.months.length-1].clone().add(1, 'month').startOf('month');
 
-          if (!_this.max || newMonth.isBefore(_this.max)) {
-            displayedMonths.push(newMonth);
+        if (!_this.max || newMonth.isBefore(_this.max)) {
+          _this.months.push(newMonth);
 
-            monthContainer.appendChild(renderMonth(displayedMonths[displayedMonths.length-1]));
-          }
+          monthContainer.appendChild(renderMonth(_this.months[_this.months.length-1]));
         }
       }
     }
@@ -360,7 +383,7 @@ var Datepicker = (function() {
 
         e.preventDefault();
 
-        calendarContainer.querySelectorAll('.selected').forEach(function(prv) {
+        _this.container.querySelectorAll('.selected').forEach(function(prv) {
           var otherClasses = prv.className.split(' ');
 
           otherClasses.splice(otherClasses.indexOf('selected'), 1);
