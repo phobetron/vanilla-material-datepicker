@@ -17,7 +17,7 @@
 }
 
 .datepicker caption {
-  font-size: 1.1em;
+  font-size: 1.075em;
   font-weight: bold;
   padding: .75em 1.25em 1em;
   text-align: left;
@@ -40,6 +40,10 @@
 
 .datepicker th:last-child, .datepicker td:last-child {
   padding-right: 1em;
+}
+
+.datepicker th {
+  font-weight: normal;
 }
 
 .datepicker-header {
@@ -93,7 +97,8 @@ table.datepicker-month {
 
 .datepicker-month .inset {
   left: 0;
-  padding: 0 2.25em;
+  padding-top: 0;
+  padding-bottom: 0;
   position: absolute;
-  top: .7em;
+  top: .7871em;
 }

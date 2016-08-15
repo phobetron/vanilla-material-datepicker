@@ -14,6 +14,9 @@ var Datepicker = (function() {
         container = document.createElement('aside'),
         months = [],
         open = false,
+        input = options.input,
+        display = options.display,
+        button = options.button,
         date = options.date ? moment(options.date) : moment(),
         min = options.min ? moment(options.min) : null,
         max = options.max ? moment(options.max) : null,
@@ -23,25 +26,50 @@ var Datepicker = (function() {
 
     if (!validOptions(options)) { return false; }
 
-
     Object.defineProperties(this, {
-      open: merge({
-        value: function() {
-          datepickers.forEach(function(dp) {
-            dp.close();
-          });
+      filter: merge({
+        value: filter
+      }, defaultDescriptor),
 
-          _this.container.style.display = 'block';
-          renderMonths();
-          open = true;
+      formatInput: merge({
+        value: formatInput
+      }, defaultDescriptor),
+
+      formatDisplay: merge({
+        value: formatDisplay
+      }, defaultDescriptor),
+
+      selectDate: merge({
+        value: function(selectedDate) {
+          _this.date = selectedDate;
+          options.onSelectDate.bind(this)(selectedDate);
+          _this.close();
         }
       }, defaultDescriptor),
 
       close: merge({
         value: function() {
-          _this.container.style.display = 'none';
-          destroyMonths();
-          open = false;
+          if (open) {
+            _this.container.style.visibility = 'hidden';
+            destroyMonths();
+            open = false;
+            options.onClose.bind(this)();
+          }
+        }
+      }, defaultDescriptor),
+
+      open: merge({
+        value: function() {
+          if (!open) {
+            datepickers.forEach(function(dp) {
+              dp.close();
+            });
+
+            _this.container.style.visibility = 'visible';
+            renderMonths();
+            open = true;
+            options.onOpen.bind(this)();
+          }
         }
       }, defaultDescriptor),
 
@@ -58,19 +86,7 @@ var Datepicker = (function() {
       }, defaultDescriptor),
 
       input: merge({
-        value: options.input
-      }, defaultDescriptor),
-
-      formatInput: merge({
-        value: formatInput
-      }, defaultDescriptor),
-
-      formatDisplay: merge({
-        value: formatDisplay
-      }, defaultDescriptor),
-
-      filter: merge({
-        value: filter
+        value: input
       }, defaultDescriptor),
 
       date: {
@@ -97,13 +113,13 @@ var Datepicker = (function() {
 
     if (options.display) {
       Object.defineProperty(this, 'display', merge({
-        value: options.display
+        value: display
       }, defaultDescriptor));
     }
 
     if (options.button) {
       Object.defineProperty(this, 'button', merge({
-        value: options.button
+        value: button
       }, defaultDescriptor));
 
       options.button.addEventListener('click', togglePickerHandler);
@@ -129,7 +145,10 @@ var Datepicker = (function() {
             'button',
             'min',
             'max',
-            'filter'
+            'filter',
+            'onOpen',
+            'onClose',
+            'onSelectDate'
           ];
 
       Object.keys(options).forEach(function(option) {
@@ -162,6 +181,12 @@ var Datepicker = (function() {
         valid = false;
       }
 
+      ['onOpen', 'onClose', 'onSelectDate'].forEach(function(callback) {
+        if (options[callback] && typeof options[callback] !== 'function') {
+          console.warn('Option \''+callback+'\' must be a function');
+        }
+      });
+
       if (!valid) {
         console.error('Date picker could not be initialized due to warnings');
         return false;
@@ -186,22 +211,28 @@ var Datepicker = (function() {
     }
 
     function renderCalendar() {
-      var top, left;
+      var related = _this.display || _this.input,
+          top, left;
 
-      document.body.appendChild(_this.container);
+      (_this.display || _this.input).parentNode.appendChild(_this.container);
 
       _this.container.className = 'datepicker';
 
       renderCalendarHeader();
 
-      _this.container.setAttribute('style', 'display:none;overflow:hidden;position:absolute;');
+      _this.container.setAttribute('style', 'visibility:hidden;overflow:hidden;position:absolute;');
 
-      if (_this.display) {
-        top = _this.display.offsetTop + _this.display.offsetHeight;
-        left = _this.display.offsetLeft;
+      if (related.offsetLeft + _this.container.offsetWidth > window.innerWidth) {
+        if (window.innerWidth < _this.container.offsetWidth + (_this.container.offsetWidth / 5)) {
+          left = (window.innerWidth - _this.container.offsetWidth) / 2;
+        } else {
+          left = window.innerWidth - _this.container.offsetWidth - (_this.container.offsetWidth / 10);
+        }
+
+        top = related.offsetTop;
       } else {
-        top = _this.input.offsetTop + _this.input.offsetHeight;
-        left = _this.input.offsetLeft;
+        left = related.offsetLeft;
+        top = related.offsetTop + related.offsetHeight;
       }
 
       _this.container.style.top = top + 'px';
@@ -379,25 +410,9 @@ var Datepicker = (function() {
 
     function selectDateHandler(selectedDate) {
       return function(e) {
-        var classes = this.className.split(' ');
-
         e.preventDefault();
 
-        _this.container.querySelectorAll('.selected').forEach(function(prv) {
-          var otherClasses = prv.className.split(' ');
-
-          otherClasses.splice(otherClasses.indexOf('selected'), 1);
-
-          prv.className = otherClasses.join(' ');
-        });
-
-        if (classes.indexOf('selected') < 0) { classes.push('selected'); }
-
-        this.className = classes.join(' ');
-
-        _this.date = selectedDate;
-
-        _this.close();
+        _this.selectDate(selectedDate);
       }
     }
   }
