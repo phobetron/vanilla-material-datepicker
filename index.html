@@ -4,7 +4,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title>Datepicker</title>
     <link rel="stylesheet" href="datepicker.css">
-    <script src="moment.js"></script>
+    <script src="node_modules/moment/moment.js"></script>
     <script src="datepicker.js"></script>
     <script>
       function filter(date) {
@@ -63,14 +63,16 @@
     <form action="#" class="with_input">
       <p>
         <label>Select a Date:</label>
-        <input name="date_field" type="text">
+        <span class="datepicker-parent">
+          <input name="date_field" type="text">
+        </span>
       </p>
     </form>
 
     <form action="#" class="with_display">
       <input name="date_field" type="hidden">
 
-      <p>
+      <p class="datepicker-parent">
         <span class="display">Date</span>
       </p>
     </form>
@@ -78,7 +80,7 @@
     <form action="#" class="with_button">
       <input name="date_field" type="hidden">
 
-      <p>
+      <p class="datepicker-parent">
         <span class="display">Date</span>
         <button class="opener">Pick</button>
       </p>

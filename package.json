@@ -1,0 +1,58 @@
+{
+  "name": "vanilla-material-datepicker",
+  "version": "1.0.0",
+  "description": "Datepicker inspired by Angular Material, written in Vanilla JS for maximum compatibility",
+  "main": "build/datepicker.js",
+  "scripts": {
+    "test": "karma start",
+    "build": "webpack",
+    "start": "webpack-dev-server --progress --colors"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/phobetron/vanilla-material-datepicker.git"
+  },
+  "keywords": [
+    "vanilla",
+    "material",
+    "datepicker",
+    "date",
+    "picker",
+    "moment"
+  ],
+  "author": "Charles Hudson",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/phobetron/vanilla-material-datepicker/issues"
+  },
+  "homepage": "https://github.com/phobetron/vanilla-material-datepicker#readme",
+  "dependencies": {
+    "moment": "^2.14.1"
+  },
+  "devDependencies": {
+    "babel-core": "^6.1.4",
+    "babel-loader": "^6.1.0",
+    "babel-plugin-transform-runtime": "^6.1.4",
+    "babel-preset-es2015": "^6.1.4",
+    "babel-preset-stage-0": "^6.1.2",
+    "babel-register": "^6.1.4",
+    "chai": "^3.5.0",
+    "css-loader": "^0.23.1",
+    "extract-text-webpack-plugin": "^1.0.1",
+    "karma": "^1.1.2",
+    "karma-mocha": "^1.1.1",
+    "karma-phantomjs-launcher": "^1.0.1",
+    "karma-sinon-chai": "^1.2.3",
+    "karma-sourcemap-loader": "^0.3.7",
+    "karma-webpack": "^1.7.0",
+    "mocha": "^2.5.3",
+    "node-sass": "^3.8.0",
+    "postcss-loader": "^0.9.1",
+    "sass-loader": "^3.2.1",
+    "sinon": "^1.17.5",
+    "sinon-chai": "^2.8.0",
+    "style-loader": "^0.13.0",
+    "webpack": "^1.13.1",
+    "webpack-dev-server": "^1.14.1"
+  }
+}

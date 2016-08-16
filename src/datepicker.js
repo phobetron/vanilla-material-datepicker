@@ -1,5 +1,8 @@
 "use strict";
 
+require('./datepicker.scss');
+require('moment');
+
 var Datepicker = (function() {
 
   var datepickers = [];
@@ -50,7 +53,7 @@ var Datepicker = (function() {
       close: merge({
         value: function() {
           if (open) {
-            _this.container.style.visibility = 'hidden';
+            _this.container.style.display = 'none';
             destroyMonths();
             open = false;
             options.onClose.bind(this)();
@@ -65,7 +68,7 @@ var Datepicker = (function() {
               dp.close();
             });
 
-            _this.container.style.visibility = 'visible';
+            _this.container.style.display = 'block';
             renderMonths();
             open = true;
             options.onOpen.bind(this)();
@@ -211,32 +214,16 @@ var Datepicker = (function() {
     }
 
     function renderCalendar() {
-      var related = _this.display || _this.input,
+      var element = (_this.display || _this.input),
           top, left;
 
-      (_this.display || _this.input).parentNode.appendChild(_this.container);
+      element.parentNode.appendChild(_this.container);
 
       _this.container.className = 'datepicker';
 
       renderCalendarHeader();
 
-      _this.container.setAttribute('style', 'visibility:hidden;overflow:hidden;position:absolute;');
-
-      if (related.offsetLeft + _this.container.offsetWidth > window.innerWidth) {
-        if (window.innerWidth < _this.container.offsetWidth + (_this.container.offsetWidth / 5)) {
-          left = (window.innerWidth - _this.container.offsetWidth) / 2;
-        } else {
-          left = window.innerWidth - _this.container.offsetWidth - (_this.container.offsetWidth / 10);
-        }
-
-        top = related.offsetTop;
-      } else {
-        left = related.offsetLeft;
-        top = related.offsetTop + related.offsetHeight;
-      }
-
-      _this.container.style.top = top + 'px';
-      _this.container.style.left = left + 'px';
+      _this.container.setAttribute('style', 'display:none;overflow:hidden;');
     }
 
     function renderCalendarHeader() {
@@ -430,3 +417,5 @@ var Datepicker = (function() {
   return Datepicker;
 
 })();
+
+module.exports = Datepicker;
