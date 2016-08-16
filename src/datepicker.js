@@ -256,7 +256,7 @@ var Datepicker = (function() {
       _this.container.appendChild(monthContainer);
 
       monthContainer.className = 'datepicker-months';
-      monthContainer.setAttribute('style', 'overflow-y:auto;position:relative;visibility:hidden;width:100%;');
+      monthContainer.setAttribute('style', 'overflow-y:auto;width:100%;');
 
       if (!_this.min || prevMonth.isAfter(_this.min)) { _this.months.push(prevMonth); }
 
@@ -275,7 +275,6 @@ var Datepicker = (function() {
       monthContainer.style.paddingRight = (monthContainer.offsetWidth - monthContainer.clientWidth) + 'px';
       monthContainer.scrollTop = currMonthElm.offsetTop;
       monthContainer.addEventListener('scroll', monthScrollHandler);
-      monthContainer.style.visibility = 'visible';
     }
 
     function destroyMonths() {
