@@ -1,0 +1,73 @@
+doctype html
+html(lang="en")
+  head
+    meta( charset="utf-8" )
+    meta( name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" )
+    title Datepicker
+    script.
+      function filter(date) {
+        return date.day() < 1 || date.day() > 5;
+      }
+
+      function openCallback() {
+        console.log('open', this.isOpen());
+      }
+
+      function closeCallback() {
+        console.log('close', this.isOpen());
+      }
+
+      function selectDateCallback(date) {
+        console.log('selected '+date.format('YYYY-MM-DD'));
+      }
+
+      document.addEventListener('DOMContentLoaded', function(event) {
+        new Datepicker(document.querySelector('.with_input [name=date_field]'), {
+          min: '2015-08-20',
+          max: '2017-08-20',
+          filter: filter,
+          onOpen: openCallback,
+          onClose: closeCallback,
+          onSelectDate: selectDateCallback
+        });
+
+        new Datepicker(document.querySelector('.with_display [name=date_field]'), {
+          display: document.querySelector('.with_display .display'),
+          min: '2015-08-20',
+          max: '2017-08-20',
+          filter: filter,
+          onOpen: openCallback,
+          onClose: closeCallback,
+          onSelectDate: selectDateCallback
+        });
+
+        new Datepicker(document.querySelector('.with_button [name=date_field]'), {
+          display: document.querySelector('.with_button .display'),
+          button: document.querySelector('.with_button .opener'),
+          min: '2015-08-20',
+          max: '2017-08-20',
+          filter: filter,
+          onOpen: openCallback,
+          onClose: closeCallback,
+          onSelectDate: selectDateCallback
+        });
+      });
+  body
+    form( action="#" class="with_input" )
+      p
+        label Select a Date:
+        span( class="datepicker-parent" )
+          input( name="date_field" type="text" tabindex="1" )
+
+    form( action="#" class="with_display" )
+      input( name="date_field" type="hidden" )
+
+      p( class="datepicker-parent" )
+        span( class="display" tabindex="2" ) Date
+
+    form( action="#" class="with_button" )
+      input( name="date_field" type="hidden" )
+
+      p( class="datepicker-parent" )
+        span( class="display" ) Date
+        button( class="opener" tabindex="3" ) Pick

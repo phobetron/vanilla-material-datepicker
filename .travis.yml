@@ -1,0 +1,13 @@
+language: node_js
+node_js:
+- 6
+before_install:
+- npm install -g karma-cli #codeclimate-test-reporter
+- rm -rf node_modules
+script:
+- npm test && npm run dist
+#after_success:
+#- codeclimate-test-reporter < ./coverage/PhantomJS\ 2.1.1\ \(Linux\ 0.0.0\)/lcov.info
+env:
+  global:
+  #- CODECLIMATE_REPO_TOKEN: 5d5d4e4e1382c7c63703b63848afcb425ef0276316bb4921a8b6f09c1287ffd9
